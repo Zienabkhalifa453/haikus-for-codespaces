@@ -1,0 +1,1131 @@
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+namespace oss
+{
+    class Program
+    {
+        public static Directory CurrentDirectory;
+        public static string path = "H:";
+
+        static void Main(string[] args)
+        {
+            VirtualDisk.Intialize();
+            CurrentDirectory = VirtualDisk.Root;
+            string path2 = new string(CurrentDirectory.dirname);
+
+            path = path2;
+
+
+            while (true)
+            {
+               Console.Write(path);
+                Console.Write(">>");
+                string Commmand = Console.ReadLine();
+                Commands com = new Commands(Commmand);
+            }
+        }
+    }
+
+    public class Commands
+    {
+        public string[] CommandArg;
+        public Commands(string command)
+        {
+            CommandArg = command.Split(" ");
+
+            if (CommandArg.Length == 1)
+            {
+                Command(CommandArg);
+            }
+            else if (CommandArg.Length > 1)
+            {
+                Command2Arg(CommandArg);
+            }
+        }
+        static void Command(string[] CommandArray)
+        {
+            if (CommandArray[0].ToLower() == "quit")
+            {
+                Environment.Exit(0);
+            }
+            else if (CommandArray[0].ToLower() == "cls")
+            {
+                Console.Clear();
+            }
+            else if (CommandArray[0].ToLower() == "help")
+            {
+                Console.WriteLine("cd       Change the current default directory to. If the argument is not present, report the current directory. If the directory does not exist an appropriate error should be reported.");
+                Console.WriteLine("cls      Clear the screen.");
+                Console.WriteLine("dir      List the contents of directory.");
+                Console.WriteLine("help     Display the user manual using the more filter.");
+                Console.WriteLine("quit     Quit the shell.");
+                Console.WriteLine("copy     Copies one or more files to another location.");
+                Console.WriteLine("del      Deletes one or more files.");
+                Console.WriteLine("md       Creates a directory.");
+                Console.WriteLine("rd       Removes a directory.");
+                Console.WriteLine("rename   Renames a file.");
+                Console.WriteLine("type     Displays the contents of a text file.");
+                Console.WriteLine("import   import text file(s) from your computer.");
+                Console.WriteLine("export   export text file(s) to your computer.");
+
+            }
+            else if (CommandArray[0].ToLower() == "dir")
+            {
+                int fileCounter = 0, dirCounter = 0, filesSize = 0;
+                Console.WriteLine("Directory of: H:");
+                for (int i = 0; i <Program.CurrentDirectory.DirectoryTable.Count; i++)
+                {
+                    byte attribute = Program.CurrentDirectory.DirectoryTable[i].dirattribute;
+                    if (attribute != 1) 
+                    {
+                        int size = Program.CurrentDirectory.DirectoryTable[i].fileSize;
+                        Console.Write(size);
+                        Console.WriteLine(Program.CurrentDirectory.DirectoryTable[i].dirname);
+                        fileCounter++;
+                        filesSize += size;
+                    }
+                    else
+                    {
+                        Console.Write("<DIR>");
+                        Console.WriteLine(Program.CurrentDirectory.DirectoryTable[i].dirname);
+                        dirCounter++;
+                    }
+                    Console.Write(fileCounter + " file(s)");
+                    Console.WriteLine(filesSize);
+                    Console.Write(dirCounter + "dir(s)");
+                   // Console
+                }
+            }
+
+            else
+            {
+                Console.WriteLine(CommandArray[0] + " is not a valid command.");
+                Console.WriteLine("please valid Command ");
+            }
+        }
+        static void Command2Arg(string[] CommandArray2Arg)
+        {
+            if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "cd")
+            {
+                Console.WriteLine("cd   Change the current default directory to. If the argument is not present, report the current directory. If the directory does not exist an appropriate error should be reported.");
+            }
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "cls")
+            {
+                Console.WriteLine("cls   Clear the screen.");
+            }
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "dir")
+            {
+                Console.WriteLine("dir   List the contents of directory.");
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "help")
+            {
+                Console.WriteLine("help   Display the user manual using the more filter.");
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "quit")
+            {
+                Console.WriteLine("quit   Quit the shell.");
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "copy")
+            {
+                Console.WriteLine("copy   Copies one or more files to another location.");
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "del")
+            {
+                Console.WriteLine("del   Deletes one or more files.");
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "md")
+            {
+                Console.WriteLine("md   Creates a directory.");
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "rd")
+            {
+                Console.WriteLine("rd   Removes a directory.");
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "rename")
+            {
+                Console.WriteLine("rename   Renames a file.");
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "type")
+            {
+                Console.WriteLine("type   Displays the contents of a text file.");
+            }
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "import")
+            {
+                Console.WriteLine("import   import text file(s) from your computer.");
+            }
+            else if (CommandArray2Arg[0].ToLower() == "help" && CommandArray2Arg[1].ToLower() == "export")
+            {
+                Console.WriteLine("export   export text file(s) to your computer.");
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "md")//make directory
+            {
+                if (Program.CurrentDirectory.Search(CommandArray2Arg[1].ToString()) != -1) //لو لقاه يبقي هيرجع الاندكس الي هو موجود فيه لو ملقهوش هيرجع -1 
+                {
+                    Console.WriteLine("Folder exist");
+                }
+                else
+                {
+                    DirectoryEntry dir = new DirectoryEntry(CommandArray2Arg[1].ToCharArray(), 1 ,FatTable.getAvailableBlock(),0,null);
+                    Program.CurrentDirectory.DirectoryTable.Add(dir);
+                    Program.CurrentDirectory.Write_Directory();
+                    if (Program.CurrentDirectory.Parent != null)
+                    {
+                        Program.CurrentDirectory.Parent.UpdateContent(Program.CurrentDirectory.GetDirectoryEntry());
+                        Program.CurrentDirectory.Parent.Write_Directory();
+                    }
+                }
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "rd") //remove directory
+            {
+                int index = Program.CurrentDirectory.Search(CommandArray2Arg[1].ToString());
+                if (index != -1)
+                {
+                    int FirstCluster = Program.CurrentDirectory.DirectoryTable[index].firstCluster; //علشان اشوف الفولدر موجود ولا
+                    Directory dir = new Directory(CommandArray2Arg[1].ToCharArray(), 1, FirstCluster,0,null ,Program.CurrentDirectory);
+                    dir.DeleteDirectory(CommandArray2Arg[1].ToString());
+                }
+                else
+                {
+                    Console.WriteLine("Folder not exist");
+                }
+            }
+
+
+            else if (CommandArray2Arg[0].ToLower() == "cd") //change directory
+            {
+                int index = Program.CurrentDirectory.Search(CommandArray2Arg[1].ToString());//بسيرش علي الدايريكتوري الي انا عايز اروحله 
+
+                if (index != -1)
+                {
+                    byte attribute = Program.CurrentDirectory.DirectoryTable[index].dirattribute;
+                    if (attribute == 1)
+                    {
+                        int FirstCluster = Program.CurrentDirectory.DirectoryTable[index].firstCluster; //علشان اشوف الفولدر موجود ولا
+                        Directory dir = new Directory(CommandArray2Arg[1].ToCharArray(), 1, FirstCluster, 0,null ,Program.CurrentDirectory);//بديلة معلومات الي الدايريكتوري الي عايز اروحله
+                        Program.CurrentDirectory = dir;  //هنا خليته يشاور ع الدايريكتوري الي عايز اروحله
+                        Program.path = Program.path + "//" + CommandArray2Arg[1].ToString();   //غيرت الباس
+                        Program.CurrentDirectory.ReadDirectory();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Specified folder is not exist. Its a file..");
+                    }
+                }
+            }
+            else if (CommandArray2Arg[0].ToLower() == "type")//display the file content
+            {
+                int index = Program.CurrentDirectory.Search(CommandArray2Arg[1].ToString());
+                if(index != -1)
+                {
+                    int firstcluster = Program.CurrentDirectory.DirectoryTable[index].firstCluster;
+                    int filesize = Program.CurrentDirectory.DirectoryTable[index].fileSize;
+                    string content = "";
+                    FileEntry FE = new FileEntry(CommandArray2Arg[1].ToCharArray(), 0x0, firstcluster, filesize, content, Program.CurrentDirectory);
+                    FE.ReadFileContent();
+                    Console.WriteLine(FE.fileContent);
+
+                }
+                else
+                {
+                    Console.WriteLine("The system cannot find the file specified.");
+                }
+            }
+            else if (CommandArray2Arg[0].ToLower() == "copy")
+            {
+                int index = Program.CurrentDirectory.Search(CommandArray2Arg[1].ToString());
+               
+                if (index != -1)
+                {
+                   // int nam_index = CommandArray2Arg[2].LastIndexOf("\\");
+                    string distenationName = CommandArray2Arg[2];//.Substring(nam_index);
+                  
+                    int index1 = Program.CurrentDirectory.Search(distenationName);
+                    if (index1 != -1)
+                    {
+                        if(CommandArray2Arg[1].ToString()!= distenationName)
+                        {
+                            
+                            string Fnamee = CommandArray2Arg[1];
+                            int cluster = Program.CurrentDirectory.DirectoryTable[index].firstCluster;
+                            int sizee = Program.CurrentDirectory.DirectoryTable[index].size;
+                            string contentt = Program.CurrentDirectory.DirectoryTable[index].fileContent;
+
+                            int firstt = Program.CurrentDirectory.DirectoryTable[index1].firstCluster;
+                            Directory dir = new Directory(distenationName.ToCharArray(), 1, firstt, 0, null, Program.CurrentDirectory);
+                            Program.CurrentDirectory = dir;
+                            FileEntry s = new FileEntry(Fnamee.ToCharArray(),0,cluster,sizee,contentt,dir);
+                            Program.CurrentDirectory.Write_Directory();
+                        }
+                        else
+                        {
+                            Console.WriteLine("can not copy the file to the same path");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("the file exist");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("The system can not find the file specified.");
+                }
+            }
+            else if (CommandArray2Arg[0].ToLower() == "import")
+            {
+                if (File.Exists(CommandArray2Arg[1].ToString()))
+                {
+                    int nam_index = CommandArray2Arg[1].LastIndexOf("\\");
+                    string name = CommandArray2Arg[1].Substring(nam_index+1);
+
+                    string content;
+                    content = File.ReadAllText(CommandArray2Arg[1]);
+                    int size = content.Length;
+
+                    int index1 = Program.CurrentDirectory.Search(name);
+                    if (index1 == -1)
+                    {
+                        int first_cluster;
+                        if (size > 0)
+
+                        {
+                            first_cluster = FatTable.getAvailableBlock();
+                        }
+                        else
+                        {
+                            first_cluster = 0;
+                        }
+                        char[] name1 = name.ToCharArray();
+                        FileEntry d = new FileEntry(name1, 0, first_cluster, size, content, Program.CurrentDirectory);
+                        d.WriteFileContent();
+                        DirectoryEntry m = new DirectoryEntry(name1, 0,first_cluster,size,content);
+                        Program.CurrentDirectory.DirectoryTable.Add(m);
+                        Program.CurrentDirectory.Write_Directory();
+                    }
+                    else
+                    {
+                        Console.WriteLine("file already exist");
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("file not exist");
+                }
+            
+         
+            }
+
+            else if(CommandArray2Arg[0].ToLower() == "rename")
+            {
+                char[] name = CommandArray2Arg[1].ToCharArray();
+                char[] newname = CommandArray2Arg[2].ToCharArray();
+                int index = Program.CurrentDirectory.Search(new string(name));
+                if (index != -1)
+                {
+                    int n = Program.CurrentDirectory.Search(new string(newname));
+                    if (n == -1)
+                    {
+                        //DirectoryEntry d = new DirectoryEntry();
+                        Program.CurrentDirectory.DirectoryTable[index].dirname = newname;
+                        //d.dirname = newname.ToCharArray();
+                       // Program.CurrentDirectory.DirectoryTable.RemoveAt(index);
+                       // Program.CurrentDirectory.DirectoryTable.Insert(n, d);
+                        Program.CurrentDirectory.Write_Directory();
+                    }
+                    else
+                    {
+                        Console.WriteLine("A duplicate file name exists");
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine(" The system cannot find the file specified.\n ");
+                }
+
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "del")
+            {
+                string name = CommandArray2Arg[1];
+                int index = Program.CurrentDirectory.Search(name);
+                if (index != -1)
+                {
+                    Program.CurrentDirectory.firstCluster = Program.CurrentDirectory.DirectoryTable[index].firstCluster;
+                    Program.CurrentDirectory.fileSize = Program.CurrentDirectory.DirectoryTable[index].fileSize;
+                    string content = Program.CurrentDirectory.DirectoryTable[index].fileContent;
+                    FileEntry f = new FileEntry(name.ToCharArray(), 0x0, Program.CurrentDirectory.firstCluster, Program.CurrentDirectory.fileSize,content ,Program.CurrentDirectory);
+                    f.DeleteFile(name);
+
+                }
+                else
+                {
+                    Console.WriteLine("File does not exist");
+                }
+            }
+
+            else if (CommandArray2Arg[0].ToLower() == "export")
+            {
+                string source = CommandArray2Arg[1];
+                string dest = CommandArray2Arg[2];
+                if (Program.CurrentDirectory.Search(source) != -1)
+                {
+
+                    int index = Program.CurrentDirectory.Search(source);
+                    Program.CurrentDirectory.firstCluster = Program.CurrentDirectory.DirectoryTable[index].firstCluster;
+                    Program.CurrentDirectory.fileSize = Program.CurrentDirectory.DirectoryTable[index].fileSize;
+                    string content = Program.CurrentDirectory.DirectoryTable[index].fileContent;
+                    FileEntry f = new FileEntry(source.ToCharArray(), 0x0, Program.CurrentDirectory.firstCluster, Program.CurrentDirectory.fileSize, content, Program.CurrentDirectory);
+                    f.ReadFileContent();
+                    string temp = dest + '\\' + source;
+                    if (System.IO.Directory.Exists(dest))
+                    {
+                        using StreamWriter sw = File.CreateText(temp);
+                        //StreamWriter s = new StreamWriter(dest);
+                        sw.Write(f.fileContent);
+                        sw.Flush();
+                        sw.Close();
+                    }
+                    else
+                    {
+                        Console.WriteLine("the system can not find the file ");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("This File Is Not Exists In The Virtual Disk");
+                }
+
+            }
+
+            else
+            {
+                Console.WriteLine(CommandArray2Arg[0] + " is not a valid command.");
+                Console.WriteLine("please valid Command ");
+            }
+        }
+    }
+    public static class FatTable
+    {
+        public static int[] arr;
+        public static string FileName = "D:\\OS.txt";
+        static FatTable()
+        {
+            arr = new int[1024];
+            arr[0] = -1;  // superblock
+            arr[1] = 2;   // data fat table
+            arr[2] = 3;
+            arr[3] = 4;
+            arr[4] = -1;
+            for (int i = 5; i < 1024; i++)
+            {
+                arr[i] = 0;
+            }
+        }
+
+        public static void WriteFatTable()
+
+        {
+            using (FileStream file = new FileStream(FileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                var seek = file.Seek(1024, SeekOrigin.Begin);
+                var arrayAfterEdit = new byte[1024 * 4];
+                Buffer.BlockCopy(arr, 0, arrayAfterEdit, 0, 1024);
+                file.Write(arrayAfterEdit);
+                file.Close();
+            }
+        }
+        public static int[] GetFatTable()
+        {
+
+            using (FileStream file = new FileStream(FileName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                file.Seek(1024, SeekOrigin.Begin);
+                byte[] buffer = new byte[4096];
+                file.Read(buffer, 0, buffer.Length);
+                int[] retArr = new int[1024];
+                Buffer.BlockCopy(buffer, 0, retArr, 0, buffer.Length);
+                file.Close();
+                return retArr;
+            }
+        }
+        public static int getAvailableBlocks()
+        {
+            int counter = 0;
+            for (int i = 0; i < GetFatTable().Length; i++)
+            {
+                if ((GetFatTable()[i]) == 0)
+                {
+                    counter++;
+                }
+            }
+            return counter;
+        }
+        public static int getAvailableBlock()
+        {
+            for (int i = 0; i < GetFatTable().Length; i++)
+            {
+                if ((GetFatTable()[i]) == 0)
+                {
+                    return i;
+                }
+            }
+            return 1;
+        }
+
+        public static int GetNext(int index)
+        {
+            int NextValue;
+            for (int i = 0; i < GetFatTable().Length; i++)
+            {
+                if (i == index)
+                {
+                    NextValue = GetFatTable()[i];
+                    return NextValue;
+                }
+            }
+            return 0;
+        }
+        public static void setNext(int value, int Index)
+        {
+            int[] NotBlocks = new int[5] { 0, 1, 2, 3, 4 };
+            if (Index < 0)
+            {
+
+            }
+            else
+            {
+                for (int i = 0; i < GetFatTable().Length; i++)
+                {
+                    if (Index != NotBlocks[0] && Index != NotBlocks[1] && Index != NotBlocks[2] && Index != NotBlocks[3] && Index != NotBlocks[4])
+                    {
+                        if (i == Index)
+                        {
+                            arr[i] = value;
+                            WriteFatTable();
+                            GetFatTable();
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        static public void PrintFatTable()
+        {
+            for (int i = 0; i < GetFatTable().Length; i++)
+            {
+                Console.Write(GetFatTable()[i]);
+            }
+            Console.WriteLine();
+        }
+    }
+
+    public static class VirtualDisk
+    {
+        static public Directory Root;
+
+        static public string FileName = "D:\\Os.txt";
+        static byte[] super = Encoding.ASCII.GetBytes("0");
+        static byte[] bytes = Encoding.ASCII.GetBytes("#");
+        static byte[] Data = Encoding.ASCII.GetBytes("*");
+        static int position = 0;
+
+        public static void Intialize()
+        {
+            if (!File.Exists(FileName))
+            {
+                using (FileStream file = new FileStream(FileName, FileMode.Create, FileAccess.ReadWrite))
+                {
+                    for (int i = 0; i < 1024; i++)
+                    {
+                        file.Write(super);
+                        position++;
+                    }
+
+                    file.Seek(position, SeekOrigin.Begin);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        for (int j = 0; j < 1024; j++)
+                        {
+                            file.Write(bytes);
+                            position++;
+                        }
+                    }
+                    file.Seek(position, SeekOrigin.Begin);
+
+                    for (int i = 0; i < 1019; i++)
+                    {
+                        for (int j = 0; j < 1024; j++)
+                        {
+                            file.Write(Data);
+                            position++;
+                        }
+                    }
+                    file.Close();
+                }
+                Root = new Directory("H:".ToCharArray(), 1, 6, 0,null,null);
+                Root.Write_Directory();
+                FatTable.WriteFatTable();
+
+            }
+            else
+            {
+                int[] Fat_Table = FatTable.GetFatTable();
+                Root = new Directory("H:".ToCharArray(), 1, 5, 0, null,null);
+                Root.Write_Directory();
+                Root.ReadDirectory();
+            }
+        }
+
+        static public void WriteBlock(byte[] BlockData, int Fatindex)
+        {
+            string fileName = "D:\\OS.txt";
+            using (FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                file.Seek(Fatindex * 1024, SeekOrigin.Begin);
+                file.Write(BlockData, 0, BlockData.Length);
+                file.Close();
+            }
+        }
+
+        static public byte[] GetBlock(int index)
+        {
+            string FileName = "D:\\OS.txt";
+            byte[] TheReturnData = new byte[1024];
+            FileStream file = File.OpenRead(FileName);
+            file.Seek(index * 1024, SeekOrigin.Begin);
+            file.Read(TheReturnData, 0, TheReturnData.Length);
+            file.Close();
+            return TheReturnData;
+        }
+        static public void printBlock(int index)
+        {
+            for (int i = 0; i < 1024; i++)
+            {
+                Console.Write((char)GetBlock(index)[i]);
+            }
+        }
+    }
+
+    public class DirectoryEntry
+    {
+        //fields
+        public char[] dirname = new char[11];
+        public byte dirattribute;
+        public byte[] isempty = new byte[12];
+        public int size;
+        public int firstCluster;
+        public int fileSize;
+        public string fileContent;
+
+        public DirectoryEntry(char[] dirN, byte dirAtt, int firstCluster,int fileSize,string fileContent)
+        {
+            size = 0;
+
+            string s = new string(dirN);
+
+            if (dirN.Length < 11)
+            {
+                for (int i = dirN.Length; i < 11; i++)
+                    s += (char)' ';
+            }
+
+            this.dirname = s.ToCharArray();
+            this.dirattribute = dirAtt;
+            this.firstCluster = firstCluster;
+            this.fileSize = fileSize;
+            this.fileContent = fileContent;
+            for (int i = 0; i < isempty.Length; i++)
+            {
+                isempty[i] = 0;
+            }
+        }
+
+        public byte[] getByte()
+        {
+            byte[] ConvertFileNametoBYTE = Encoding.ASCII.GetBytes(dirname); //convert array of char to array of byte
+            byte[] DirEntryarray = new byte[32];  // عملت اراى كبيرة من نوع بايت تخزن كل الداتا بتاعت الانتريز
+            byte[] arr2 = new byte[(ConvertFileNametoBYTE.Length / 2)];
+            int l = 0;
+            for (int i = 0; i < arr2.Length; i++)
+            {
+                arr2[i] = ConvertFileNametoBYTE[l]; // خزنت اسم الفايل جوه الاراى
+                l++;
+            }
+
+            for (int i = 0; i < arr2.Length; i++)
+            {
+                DirEntryarray[i] = arr2[i];
+            }
+            DirEntryarray[11] = dirattribute;  // حطيت الاتريبيوت جوه فايل ولا فولدر 1أو 0
+
+            int j = 0;
+            for (int i = 12; i < 24; i++)
+            {
+                DirEntryarray[i] = isempty[j];  // خزنت الداتا بتاعت الفايل ايمبتى فى الاراى
+                j++;
+            }
+
+            int c = 0;
+
+            byte[] CovnINTtoBYTE_firstcluster = BitConverter.GetBytes(firstCluster);//convert int to array of byte
+            // لأن الفيرست كلاستر من نوع انتيجير وانا عايزة اخليه 4 بايتات فعملت اراى علشان اخزنه
+            for (int i = 24; i < 28; i++)
+            {
+                //DirEntry[i] = Convert.ToByte(firstCluster);
+                DirEntryarray[i] = CovnINTtoBYTE_firstcluster[c];
+                c++;
+            }
+
+            int k = 0;
+            byte[] CovnINTtoBYTE_size = BitConverter.GetBytes(size);//convert int to array of byte
+            // لأن الفايل سايز من نوع انتيجير وانا عايزة اخليه 4 بايتات فعملت اراى علشان اخزنه
+            for (int i = 28; i < 32; i++)
+            {
+                DirEntryarray[i] = CovnINTtoBYTE_size[k];
+                k++;
+            }
+
+            return DirEntryarray;
+        }
+
+        public DirectoryEntry GetDirectoryEntry(byte[] arrOFbyte) //فانكشن لتحويل من الاراى اوف بايت للديركتورى انترى
+        {
+
+            char[] char11_FileName = new char[11];  // اراى اوف كاركتر لتخزين الفايل نيم
+            byte[] First11byte_filename = new byte[11]; // علشان يقرأ البايتات بتاعت الفايل نيم
+
+            for (int i = 0; i < 11; i++)
+            {
+                First11byte_filename[i] = arrOFbyte[i]; // بيقرأ البايتات من الاراى اللى راجعة
+            }
+
+            for (int i = 0; i < First11byte_filename.Length; i++)
+            {
+                char11_FileName[i] = Convert.ToChar(First11byte_filename[i]); // بيحولها لكاركتر وبيخزنها فى اراى
+            }
+
+            byte fileatt = arrOFbyte[12]; // خزن الفايل اتريبيوت
+
+            byte[] FileEmpty = new byte[12]; // عمل اراى اوف بايت علشان يقرأ بايتات الاراى القديمة
+
+            int j = 0;
+            for (int i = 12; i < 24; i++)
+            {
+                FileEmpty[j] = arrOFbyte[i]; // خزن من الاراى القديمة وحطها فى الاراى القديمة
+                j++;
+            }
+
+
+            int index = 0;
+            byte[] Fcluster = new byte[4]; // علشان يقرأ الفيرست كلاستر
+            for (int i = 24; i < 28; i++)
+            {
+                Fcluster[index] = arrOFbyte[i]; // خزن الفيرست كلاستر فى الاراى
+                index++;
+            }
+
+            int FClu = BitConverter.ToInt32(Fcluster, 0);  // خزن الفيرست كلاستر فى متغير انتيجير
+       
+
+            int indexSize = 0;
+            byte[] FSize = new byte[4];
+            for (int i = 28; i < 32; i++)
+            {
+                FSize[indexSize] = arrOFbyte[i]; // قرأ الفايل سايز فى اراى
+                indexSize++;
+            }
+
+            int FileSize = BitConverter.ToInt32(FSize, 0);  //خزن السايز فى رقم انتيجر
+
+
+            DirectoryEntry a = new DirectoryEntry(char11_FileName, fileatt, FClu,fileSize,fileContent); //عمل متغير من الكلاس علشان يبعتله الداتا
+            a.isempty = FileEmpty;
+            a.size = FileSize;
+            return a;
+        }
+        public DirectoryEntry GetDirectoryEntry() //فانكشن لو فولدر مفيهوش حاجه
+        {
+            DirectoryEntry a = new DirectoryEntry(dirname, dirattribute, firstCluster,fileSize,fileContent); //عمل متغير من الكلاس علشان يبعتله الداتا
+            a.isempty = isempty;
+            a.size = size;
+            return a;
+        }
+
+    }
+
+    public class Directory : DirectoryEntry
+    {
+        public List<DirectoryEntry> DirectoryTable;
+
+        public Directory Parent;
+
+        public int Fat_index;
+        public Directory(char[] fileName, byte fileAttribute, int firstCluster, int fileSize,string fileContent ,Directory Parent) : base(fileName, fileAttribute, firstCluster, fileSize,fileContent)
+        {
+            DirectoryTable = new List<DirectoryEntry>();
+            if (Parent != null)
+            {
+                this.Parent = Parent;
+            }
+        }
+
+        public void Write_Directory()
+        {
+            if (firstCluster != 0)
+            {
+                byte[] Directory_table_bytes = new byte[32 * DirectoryTable.Count];//بعد كل ده كل البيانات متخزنى هنا
+
+                byte[] Dircetory_entry_byte = new byte[32];
+
+                for (int i = 0; i < DirectoryTable.Count; i++)
+                {
+                    Dircetory_entry_byte = DirectoryTable[i].getByte();
+
+                    for (int j = i * 32, c = 0; c < 32; c++, j++)
+                    {
+                        Directory_table_bytes[j] = Dircetory_entry_byte[c];  //بيخزن كل الداتا بتاعت الانترى جوه الاراى
+                    }
+                }
+
+                int Number_OF_Required_Blocks = (int)Math.Ceiling(Directory_table_bytes.Length / 1024.0m);
+                int Number_of_full_Size_Block = (int)Math.Floor(Directory_table_bytes.Length / 1024.0m); //(لازم يتعمل كده علشان الفلور بتأخد نوعين داتا تايب (ديسمال) و (فلوت 
+
+
+                int Number_of_Reminder_Data = ((int)Directory_table_bytes.Length % 1024);
+                int Last_index = -1;
+
+                if (Number_OF_Required_Blocks <= FatTable.getAvailableBlocks())
+                {
+                    List<byte[]> Directory_Table_Byte = new List<byte[]>();
+
+                    int count = 0;
+
+                    for (int j = 0; j < Number_of_full_Size_Block; j++)
+                    {
+                        byte[] list = new byte[1024];
+                        for (int i = 0; i < 1024; i++)
+                        {
+                            list[i] = Directory_table_bytes[count];
+                            count++;
+                        }
+                        Directory_Table_Byte.Add(list);
+                    }
+
+                    if (Number_of_Reminder_Data > 0)
+                    {
+                        byte[] list2 = new byte[1024];
+
+                        int StartAfterFullsizeBLOCk = (1024 * Number_of_full_Size_Block); //هنا ضربها ف 1024 يعني مثلا لو هخزن حاجه 2000 ف هياخد في الفور لو الي فوق اول 1024 وهيكمل في دي ف هيبدا من بعد اول 1024 وهيكمل نخزين عادي
+
+                        for (int i = 0; i < Number_of_Reminder_Data; i++)
+                        {
+                            list2[i] = Directory_table_bytes[StartAfterFullsizeBLOCk];
+                            StartAfterFullsizeBLOCk++;
+                        }
+                        Directory_Table_Byte.Add(list2);
+                    }
+
+                    if (firstCluster != 0)
+                    {
+                        Fat_index = firstCluster;
+                    }
+                    else
+                    {
+                        Fat_index = FatTable.getAvailableBlock();//first empty block
+                        firstCluster = Fat_index;
+                    }
+
+                    for (int i = 0; i < Directory_Table_Byte.Count; i++)
+                    {
+                        VirtualDisk.WriteBlock(Directory_Table_Byte[i], Fat_index);//في حالة ان دي اخر كلاستر هكتب فيها يبقي الي بعدها بتساوي -1
+                        FatTable.setNext(-1, Fat_index);
+                    }
+                    if (Last_index != -1)
+                    {
+                        FatTable.setNext(Last_index, Fat_index);
+                    }
+                    Last_index = Fat_index;
+                    Fat_index = FatTable.getAvailableBlock();
+
+                }
+                FatTable.WriteFatTable();
+            }
+        }
+
+        public void ReadDirectory()
+        {
+            if (firstCluster != 0 && FatTable.GetNext(firstCluster) != 0)//لازم يكون مليان عشان اقرا منه
+            {
+                Fat_index = firstCluster;
+                int next;
+                next = FatTable.GetNext(Fat_index);
+                List<byte> lsobj = new List<byte>();
+                do
+                {
+                    lsobj.AddRange(VirtualDisk.GetBlock(Fat_index));
+                    Fat_index = next;
+                    if (Fat_index != -1)
+                    {
+                        next = FatTable.GetNext(Fat_index);
+                    }
+                } while (next != -1);
+
+                byte[] Dobj = new byte[32];
+
+                for (int i = 0; i < lsobj.Count; i++)
+                {
+                    Dobj[i % 32] = lsobj[i];
+
+                    if ((i + 1) % 32 == 0)
+                    {
+                        DirectoryTable.Add(GetDirectoryEntry(Dobj));
+                    }
+                }
+            }
+        }
+
+        public int Search(string FileName)
+        {
+            ReadDirectory();
+
+            for (int i = 0; i < DirectoryTable.Count; i++)
+
+            {
+                string dirnn = new string(DirectoryTable[i].dirname);
+
+                if (dirnn.Contains(FileName))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        public void UpdateContent(DirectoryEntry direc) //بتعدل علي الدايريكتوري
+        {
+            ReadDirectory();
+            int index;
+            index = Parent.Search(direc.dirname.ToString());
+
+            if (index != -1)
+            {
+                DirectoryTable.RemoveAt(index);
+                DirectoryTable.Insert(index, direc);
+            }
+
+        }
+
+        public void DeleteDirectory(string Fname)
+        {
+            if (firstCluster != 0)
+            {
+                int index = firstCluster;
+
+                int next = FatTable.GetNext(index);
+                do
+                {
+                    FatTable.setNext(0, index);
+
+                    index = next;
+
+                    if (index != -1)
+                    {
+                        next = FatTable.GetNext(index);
+                    }
+                } while (index != -1);
+
+                if (Parent != null)
+                {
+                    Parent.ReadDirectory();
+
+                    int indexParent = Parent.Search(Fname);
+
+                    if (indexParent != -1)
+                    {
+                        Parent.DirectoryTable.RemoveAt(indexParent);//الحاجة الي جوا البيرنت اتمسحت
+                        Parent.Write_Directory();
+                    }
+                }
+            }
+            FatTable.WriteFatTable();
+        }
+    }
+
+    class FileEntry : DirectoryEntry   //بتاعة الدايريكتوري كده ناقص نعمل ال ميسودس
+    {
+
+        Directory Parent;
+        public int Last_index = -1;
+        public int Fat_index;
+
+        public FileEntry(char[] fileName, byte fileAttribute, int firstCluster, int fileSize, string fileContent, Directory Parent) : base(fileName, fileAttribute, firstCluster,fileSize,fileContent)
+        {
+            if (Parent != null)
+            {
+                this.Parent = Parent;
+            }
+        }
+
+
+        public void WriteFileContent()
+        {
+            byte[] Content = new byte[fileContent.Length];
+
+            for (int i = 0; i < fileContent.Length; i++)
+            {
+                Content[i] = (byte)fileContent[i];
+            }
+
+            int Number_OF_Required_Blocks = (int)Math.Ceiling(Content.Length / 1024.0m);
+
+            int Number_of_full_Size_Block = (int)Math.Floor(Content.Length / 1024.0m);
+
+            int Number_of_Reminder_Data = ((int)Content.Length % 1024);
+
+
+            if (Number_OF_Required_Blocks <= FatTable.getAvailableBlocks())
+            {
+                int count = 0;
+
+                List<byte[]> list1 = new List<byte[]>();
+
+                for (int j = 0; j < Number_of_full_Size_Block; j++)
+                {
+                    byte[] list = new byte[1024];
+                    for (int i = 0; i < 1024; i++)
+                    {
+                        list[i] = Content[count];
+                        count++;
+                    }
+
+                    list1.Add(list);//حطيت الكونينت في ليست
+                }
+
+
+                if (Number_of_Reminder_Data > 0)
+                {
+                    byte[] list = new byte[1024];
+                    for (int i = 0; i < Number_of_Reminder_Data; i++)
+                    {
+                        list[i] = Content[count];
+                        count++;
+                    }
+                    list1.Add(list);
+                }
+
+                if (firstCluster != 0)
+                {
+                    Fat_index = firstCluster;
+                }
+                else
+                {
+                    Fat_index = FatTable.getAvailableBlock();
+                    firstCluster = Fat_index;
+                }
+
+                for (int i = 0; i < list1.Count; i++)
+                {
+
+                    VirtualDisk.WriteBlock(list1[i], Fat_index);
+                    FatTable.setNext(-1, Fat_index);
+                }
+
+                if (Last_index != -1)
+                {
+                    FatTable.setNext(Last_index, Fat_index);
+                }
+
+                Last_index = Fat_index;
+                Fat_index = FatTable.getAvailableBlock();
+            }
+            FatTable.WriteFatTable();
+        }
+
+        public void ReadFileContent()
+        {
+            if (firstCluster != 0 && FatTable.GetNext(firstCluster) != 0)
+            {
+                // List<DirectoryEntry> DT = new List<DirectoryEntry>();
+                Fat_index = firstCluster;
+
+                int next;
+
+                next = FatTable.GetNext(Fat_index);
+
+                List<byte> ls = new List<byte>();
+
+                do
+                {
+                    ls.AddRange(VirtualDisk.GetBlock(Fat_index));
+                    Fat_index = next;
+                    if (Fat_index != -1)
+                    {
+                        next = FatTable.GetNext(Fat_index);
+                    }
+                } while (next != -1);
+
+                byte[] d = new byte[32];
+
+                for (int i = 0; i < ls.Count; i++)
+                {
+                    d[i % 32] = ls[i];
+                    if ((i + 1) % 32 == 0)
+                    {
+                        fileContent += (d).ToString();
+                    }
+                }
+            }
+        }
+
+        public void DeleteFile(string fileName)
+        {
+            if (firstCluster != 0)
+            {
+                int index = firstCluster;
+
+                int next = FatTable.GetNext(index);
+
+                do
+                {
+                    FatTable.setNext(0, index);
+                    index = next;
+                    if (index != -1)
+                    {
+                        next = FatTable.GetNext(index);
+                    }
+                } while (index != -1);
+            }
+            if (Parent != null)
+            {
+                Parent.ReadDirectory();
+                int indexParent = Parent.Search(fileName);
+                if (indexParent != -1)
+                {
+                    Parent.DirectoryTable.RemoveAt(indexParent);
+                    Parent.Write_Directory();
+                }
+            }
+            FatTable.WriteFatTable();
+        }
+    }
+}
